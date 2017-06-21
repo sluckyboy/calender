@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Calendar 3.1</title>
+<script src="js/jquery-2.1.1.min.js"></script>
+<script src="js/calendar-3.1.js"></script>
+<script type="text/javascript">
+$(document).ready(function(e) {
+	//在id=test的DIV中显示日历
+	calendar_init($("#test"),{
+		title_color:"yellow",
+		title_bg_color:"red",
+		day_color:"brown",
+		day_bg_color:"green",
+		date_bg_color:"pink",
+		date_color:"blue",
+		date_active_color:"red"
+	});
+	
+	//在id=test2的DIV中显示日历
+	calendar_init($("#test2"));
+	
+	//在id=test3的DIV中显示日历，由于该DIV宽度小于200像素，日历无法正常显示
+	calendar_init($("#test3"));
+});
+</script>
+
+<style>
+#test {
+	width:400px;
+	height:auto;
+	overflow:hidden;
+	border:solid 1px;
+	margin-bottom:20px;
+}
+
+#test2 {
+	width:200px;
+	height:auto;
+	overflow:hidden;
+	border:solid 1px;
+	margin-bottom:20px;
+}
+
+#test3 {
+	width:190px;
+	height:auto;
+	overflow:hidden;
+	border:solid 1px;
+	margin-bottom:20px;
+}
+</style>
+</head>
+
+<body>
+<div id="test">
+</div>
+
+<div id="test2">
+</div>
+
+<div id="test3">
+</div>
+</body>
+</html>

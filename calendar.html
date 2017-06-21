@@ -1,0 +1,377 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>日历控件</title>
+<style>
+#date_text {
+	background-image: url(images/input.png);
+	background-repeat:no-repeat;
+	width: 198px;
+	height: 27px;
+	border:none;
+	padding-left:5px;
+	cursor:pointer;
+}
+
+#cal_body {
+	width: 198px;
+	height: auto;
+	overflow:hidden;
+	border: solid 1px #CCCCCC;
+	display: none;
+	position:absolute;
+	z-index:10;
+}
+
+.line {
+	width:100%;
+	height:26px;
+	float:left;
+	background-color:#0FF;
+	font-size:14px;
+}
+
+.cube {
+	float:left;
+	width:26px;
+	height:26px;
+	line-height:26px;
+	text-align:center;
+	margin-left:2px;
+	margin-bottom:2px;
+}
+
+.btn {
+	float:left;
+	background-color:#CCC;
+	margin-left:10px;
+	width:20px;
+	height:20px;
+	text-align:center;
+	line-height:20px;
+	border-radius:3px;
+	border:solid 1px;
+	margin-top:2px;
+	cursor:pointer;
+}
+
+.year_month {
+	float:left;
+	margin-left:10px;
+	width:90px;
+	height:19px;
+	text-align:center;
+	line-height:19px;
+	border-radius:6px;
+}
+
+.end_tag {
+	height:26px;
+	line-height:26px;
+	margin-left:10px;
+}
+</style>
+<script>
+Date.prototype.toFormatString  = function(){
+	var result = this.getFullYear() + "-" + (this.getMonth() + 1) + "-" + this.getDate();
+	return result;
+};
+
+String.prototype.year = function(){
+	var str = this.substring(0,4);
+	return str;
+};
+String.prototype.month = function(){
+	var start = this.indexOf("-") + 1;
+	var end = this.lastIndexOf("-");
+	return parseInt(this.substring(start, end)) - 1;
+};
+String.prototype.date = function(){
+	var start = this.lastIndexOf("-") + 1;
+	return this.substring(start);
+};
+	
+var today = new Date();
+var month_big = new Array("1","3","5","7","8","10","12"); //包含所有大月的数组
+var month_small = new Array("4","6","9","11"); //包含所有小月的数组 
+
+//判断数组array中是否包含元素obj的函数，包含则返回true，不包含则返回false
+function array_contain(array, obj){
+	for (var i = 0; i < array.length; i++){
+		if (array[i] == obj)
+			return true;
+    }
+	return false;
+}
+
+//判断年份year是否为闰年，是闰年则返回true，否则返回false
+function isLeapYear(year){
+	var a = year % 4;
+	var b = year % 100;
+	var c = year % 400;
+	if( ( (a == 0) && (b != 0) ) || (c == 0) ){
+		return true;
+	}
+	return false;
+}
+
+function hideCalendar(){
+	var calbody = document.getElementById("cal_body");
+	cal_body.style.display = "none";
+}
+
+function showCalendar(){	
+	var calbody = document.getElementById("cal_body");
+	var style = getDefaultStyle(calbody,"display");
+	if(style == "none")
+		cal_body.style.display = "block";
+	if(style == "block")
+		cal_body.style.display = "none";
+	
+	var date_text = document.getElementById("date_text");
+	var val = date_text.value;
+	init(val);
+}
+
+function init(val){	
+	clearCube();
+	
+	var temp_date;
+	var year;
+	var month;
+	var date;
+	
+	var date_text = document.getElementById("date_text");
+	if(val == ""){
+		temp_date = today;
+		date_text.value = today.toFormatString();
+	}
+	else{
+		year = val.year();
+		month = val.month();
+		date = val.date();
+		temp_date = new Date(year,month,date);		
+	}
+		
+	year = temp_date.getFullYear();
+	month = temp_date.getMonth() + 1;
+	date = temp_date.getDate();
+	temp_date.setDate(1);
+	
+	var start = temp_date.getDay() + 7;
+	var end;
+	
+	if(array_contain(month_big, month)){
+		end = start + 31;
+	}
+	else if(array_contain(month_small, month)){
+		end = start + 30;
+	}
+	else{
+		if(isLeapYear(year)){
+			end = start + 29;
+		}
+		else{
+			end = start + 28;
+		}
+	}
+	
+	for(var i = start; i < end; i++){
+		var cube = document.getElementsByClassName("cube").item(i);
+		cube.innerHTML = i - start + 1;
+		
+		cube.style.cursor = "pointer";
+		cube.onmouseover = function(){
+			this.style.backgroundColor = '#0FF';
+		}
+		if(date == (i - start + 1))
+			cube.style.backgroundColor = '#0FF';
+		else{
+			cube.onmouseout = function(){
+				this.style.backgroundColor = '';
+			}
+		}
+		cube.onclick = function(){
+			date_text.value = year + "-" + month + "-" + this.innerHTML;
+			
+			cal_body.style.display = "none";		
+		}
+	}
+	
+	document.getElementById("text_year").value = year;
+	document.getElementById("text_month").value = month;
+}
+
+function clearCube(){
+	for(var i=7; i < 49; i++){
+		var cube = document.getElementsByClassName("cube").item(i);
+		cube.innerHTML = "";
+		cube.style.backgroundColor = "";
+	}
+}
+
+function yearDown(){
+	if(isValidated()){
+		var old_year = parseInt(document.getElementById("text_year").value);
+		if(old_year > 1960){
+			var year = old_year - 1;
+			var month = parseInt(document.getElementById("text_month").value);
+			var val = year + "-" + month + "-" + 1;
+			init(val);
+		}
+	}
+}
+
+function yearUp(){
+	if(isValidated()){
+		var old_year = parseInt(document.getElementById("text_year").value);
+		if(old_year < 2050){
+			var year = old_year + 1;
+			var month = parseInt(document.getElementById("text_month").value);
+			var val = year + "-" + month + "-" + 1;
+			init(val);
+		}
+	}
+}
+
+function monthDown(){
+	if(isValidated()){
+		var old_month = parseInt(document.getElementById("text_month").value)
+		if(old_month > 1){
+			var year = parseInt(document.getElementById("text_year").value);
+			var month = old_month - 1;
+			var val = year + "-" + month + "-" + 1;
+			init(val);
+		}
+		else {
+			var year = parseInt(document.getElementById("text_year").value) - 1;
+			var month = 12;
+			var val = year + "-" + month + "-" + 1;
+			init(val);
+		}
+	}
+		
+}
+
+function monthUp(){
+	if(isValidated()){
+		var old_month = parseInt(document.getElementById("text_month").value)
+		if(old_month < 12){
+			var year = parseInt(document.getElementById("text_year").value);
+			var month = parseInt(document.getElementById("text_month").value) + 1;
+			var val = year + "-" + month + "-" + 1;
+			init(val);
+		}
+		else {
+			var year = parseInt(document.getElementById("text_year").value) + 1;
+			var month = 1;
+			var val = year + "-" + month + "-" + 1;
+			init(val);
+		}
+	}
+}
+
+function isValidated(){
+	var year = document.getElementById("text_year").value;
+	var month = document.getElementById("text_month").value;
+	if(isNaN(year) || isNaN(month)){
+		alert("请输入正确的年份/月份");
+		return false;
+	}
+	else{
+		if(year%1 != 0 || month%1 != 0){
+			alert("请输入正确的年份/月份");
+			return false;
+		}
+		else{
+			year = parseInt(year);
+			if(year < 1960 || year > 2050){
+				alert("请输入1960~2050之间的年份！");
+				return false;
+			}
+			else if(month < 1 || month >12){
+				alert("请输入正确的月份！");
+				return false;
+			}
+			else{
+				return true;
+			}
+		}
+	}
+}
+
+function changed(){
+	if(isValidated()){
+		var year = document.getElementById("text_year").value;
+		var month = document.getElementById("text_month").value;
+		var val = year + "-" + month + "-" + 1;
+		init(val);
+	}
+}
+
+function getDefaultStyle(obj,attribute){ 
+ 	return obj.currentStyle?obj.currentStyle[attribute]:document.defaultView.getComputedStyle(obj,false)[attribute];
+}
+</script>
+</head>
+
+<body>
+<div id="container">
+<div id="input_bg"><input id="date_text" type="text" readonly onClick="showCalendar()" /></div>
+<div id="cal_body">
+	<div class="line"><div class="btn" id="year_down" onClick="yearDown()">-</div><input class="year_month" id="text_year" value="2015" onChange="changed()"><div class="btn" id="year_up" onClick="yearUp()">+</div><span class="end_tag">年</span></div>
+    <div class="line"><div class="btn" id="month_down" onClick="monthDown()">-</div><input class="year_month" id="text_month" value="5" onChange="changed()"><div class="btn" id="month_up" onClick="monthUp()">+</div><span class="end_tag">月</span></div>
+    <div class="cube">日</div>
+    <div class="cube">一</div>
+    <div class="cube">二</div>
+    <div class="cube">三</div>
+    <div class="cube">四</div>
+    <div class="cube">五</div>
+    <div class="cube">六</div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+    <div class="cube"></div>
+</div>
+<div>
+</body>
+</html>
